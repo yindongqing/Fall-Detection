@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class CountPeople:
     # otsu阈值处理后前景所占的比例阈值，低于这个阈值我们认为当前帧是背景，否则是前景
 
-    def __init__(self, pre_read_count=30, th_bgframes=100, row=32, col=32):
+    def __init__(self, pre_read_count=30, th_bgframes=100, row=8, col=8):
         # the counter of the bgframes
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.amg = adafruit_amg88xx.AMG88XX(self.i2c)
@@ -94,7 +94,7 @@ class CountPeople:
                 all_frames.append(currFrame)
                 frame_counter += 1
                 print("the %dth frame" % (frame_counter))
-                if frame_counter > frame_count:
+                if frame_counter >= frame_count:
                     self.saveImageData(all_frames, customDir)
                     break
 
