@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cv2 as cv
 import os
 import sys
-
+"""绘图脚本"""
 if len(sys.argv) > 2:
     path = sys.argv[1]
     output = sys.argv[2]
