@@ -41,7 +41,7 @@ while counter < n:
     bgtempdir =bgactual+str(counter)
     cudr = currDir+str(counter)
     imagedir = imageactual+str(counter)
-    readBgTemperature(400,bgtempdir)
+    #readBgTemperature(400,bgtempdir)
     try:
         cp.acquireImageData(m,imagedir)
     except KeyboardInterrupt:

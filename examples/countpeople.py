@@ -79,9 +79,6 @@ class CountPeople:
                 os.mkdir(customDir)
         # load the avetemp.py stores the average temperature
         # the result of the interpolating for the grid
-        average_path = customDir+"/"+"avgtemp.npy"
-        print("the average path is %s" % (average_path))
-        average_temperature = np.load(average_path)
         all_frames = []
         frame_counter = 0  # a counter of frames' num
         # diff_queues saves the difference between average_temp and curr_temp
