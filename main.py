@@ -1,7 +1,7 @@
 import os
 import sys
-from countpeople.countpeople import CountPeople as CP
-from countpeople.calAveBgTemperature import readBgTemperature 
+from examples.countpeople import CountPeople as CP
+from examples.calAveBgTemperature import readBgTemperature 
 """
 这个文件是自动收集n次m帧数据
 """
