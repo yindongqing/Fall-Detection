@@ -9,8 +9,6 @@ import scipy
 import os
 import sys
 import matplotlib.pyplot as plt
-from scipy.interpolate import griddata
-from otsuBinarize import otsuThreshold
 
 class CountPeople:
     # otsu阈值处理后前景所占的比例阈值，低于这个阈值我们认为当前帧是背景，否则是前景
@@ -49,7 +47,6 @@ class CountPeople:
         self.__hist_x_thresh = 2.0
         self.__hist_amp_thresh = 20
         self.__isSingle = False
-        self.otsu_threshold =0
         
     def preReadPixels(self,pre_read_count = 20):
         self.pre_read_count =  pre_read_count
@@ -60,6 +57,13 @@ class CountPeople:
             
     def setPackageDir(self, pdir):
         self.pdir = pdir
+        
+    def saveImageData(self, all_frames, outputdir):
+        print("length of the all_frames: %d" % (len(all_frames)))
+        print("save all images data in "+outputdir+"/"+"imagedata.npy")
+        # save all image data in directory:./actual_dir
+        np.save(outputdir+"/imagedata.npy", np.array(all_frames))
+        # save all diff between bgtemperature and current temperature in actual dir
         
     def acquireImageData(self,frame_count = 2000,customDir = None):
         '''
