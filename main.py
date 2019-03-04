@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from examples.countpeople import CountPeople as CP
 from examples.calAveBgTemperature import readBgTemperature 
 """
@@ -35,6 +36,7 @@ if curr.endswith("Fall-Detection"):
 bgactual = curr+"/"+currDir
 imageactual = curr+"/"+currDir
 cp.setPackageDir(curr)
+start_time = time.time()
 while counter < n:
     counter+=1
     print("the %dth whiles"%(counter))
@@ -48,4 +50,6 @@ while counter < n:
         print("catch a keyboardinterrupt ,break the while")
         break
 
+end_time = time.time()
+print(end_time - start_time)
 print("sucessfully test all picture")
