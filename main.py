@@ -41,8 +41,12 @@ while counter < n:
     counter+=1
     print("the %dth whiles"%(counter))
     bgtempdir =bgactual+str(counter)
-    cudr = currDir+str(counter)
-    imagedir = imageactual+str(counter)
+    if n == 1:
+        cudr = currDir
+        imagedir = imageactual
+    else:
+        cudr = currDir+str(counter)
+        imagedir = imageactual+str(counter)
     #readBgTemperature(400,bgtempdir)
     try:
         cp.acquireImageData(m,imagedir)

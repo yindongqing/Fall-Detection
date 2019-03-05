@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-
+import time
 row_num = 8
 col_num = 8
 pixel_num = 64
@@ -18,16 +18,25 @@ else:
 currDir = os.path.abspath(os.path.dirname(__file__))
 if currDir.endswith("examples"):
     dataDir = currDir + "/" + dataDir
+
 all_frame = np.load(dataDir)
-all_var = []
+if np.size(all_frame) < 10 * pixel_num:
+    raise ValueError("please input the dir larger than 10*64")
 
-for i in range(row_num):
-    for j in range(col_num):
-        curr_pixel = all_frame[:,i:i+1,j:j+1]
-        curr_var = np.var(curr_pixel)
-        all_var = np.append(all_var,curr_var)
+frame_num = np.size(all_frame) // pixel_num #帧数
+print(frame_num)
+start_time = time.clock()
+all_var = np.zeros((frame_num - 10) * pixel_num)
+for k in range(10,frame_num):
+    curr_frame = all_frame[k - 10:k,:,:]
+    for i in range(row_num):
+        for j in range(col_num):
+            curr_pixel = curr_frame[:,i,j]
+            curr_var = np.var(curr_pixel)
+            all_var[(k - 10) * 64 + i * 8 + j ] = curr_var
+max_var = np.max(all_var)
+end_time = time.clock()
+print(end_time - start_time)
+print(max_var)
 
-print(np.max(all_var))
-#print(np.var(all_frame, ddof = 1))
-#bg_average = np.sum(all_frame) / np.size(all_frame)
 
