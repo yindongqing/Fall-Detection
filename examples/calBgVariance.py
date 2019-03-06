@@ -25,7 +25,7 @@ if np.size(all_frame) < 10 * pixel_num:
 
 frame_num = np.size(all_frame) // pixel_num #帧数
 print(frame_num)
-start_time = time.clock()
+start_time = time.time()
 all_var = np.zeros((frame_num - 10) * pixel_num)
 for k in range(10,frame_num):
     curr_frame = all_frame[k - 10:k,:,:]
@@ -35,7 +35,7 @@ for k in range(10,frame_num):
             curr_var = np.var(curr_pixel)
             all_var[(k - 10) * 64 + i * 8 + j ] = curr_var
 max_var = np.max(all_var)
-end_time = time.clock()
+end_time = time.time()
 print(end_time - start_time)
 print(max_var)
 
