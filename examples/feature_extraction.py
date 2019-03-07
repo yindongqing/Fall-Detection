@@ -2,7 +2,7 @@ import numpy as np
 import os
 import sys
 import time
-from skimage.measure import label
+from skimage.measure import label,regionprops
 row_num = 8
 col_num = 8
 pixel_num = 64
@@ -12,7 +12,7 @@ k_end = 0
 max_moving_frame = 0
 max_variance = 0.0
 max_therhold_pixel_num = 0
-max_R = 0
+max_R = 0.0
 #阈值
 therhold = 0.8
 
@@ -25,18 +25,44 @@ def calR(curr_temp_frame):
     #舍弃1/3的温度，取温度相对较高的部分计算温度均值
     sorted_temp = np.sort(temp)[::-1]
     chosed_temp = sorted_temp[:np.size(sorted_temp) * 2 // 3]
+    """
     print(chosed_temp)
     print(np.size(chosed_temp))
+    """
+    #计算高温均值
     avgTemp = np.mean(chosed_temp)
     higher_temp_frame = np.array(curr_temp_frame)
+    """
     print(higher_temp_frame)
-    higher_temp_frame[higher_temp_frame < avgTemp] = 0
-    higher_temp_frame[higher_temp_frame >= avgTemp] = 1
+    """
+    #得到各个高温连通区域
+    higher_temp_frame[higher_temp_frame <= avgTemp] = 0
+    higher_temp_frame[higher_temp_frame > avgTemp] = 1
     higher_temp_frame.astype(int)
+    """
     print(avgTemp)
     print(higher_temp_frame)
+    """
     label_img = label(higher_temp_frame,connectivity = 1)
+    """
     print(label_img)
+    """
+    #各个连通区域的属性
+    props = regionprops(label_img)
+    #找到最大高温区域
+    area_dict = dict()
+    for i in range(len(props)):
+        area_dict[i] = props[i].area
+    """
+    print(max(area_dict,key = area_dict.get))
+    """
+    max_area_pos = max(area_dict,key = area_dict.get)
+    #求高温特征R
+    pos = props[max_area_pos].bbox
+    row_len = pos[2] - pos[0]
+    col_len = pos[3] - pos[1]
+    curr_R = props[max_area_pos].area * col_len / row_len
+    max_R_list.append(curr_R)
 
 def calFeature(dataDir):
     is_human = False
@@ -68,9 +94,9 @@ def calFeature(dataDir):
             active_num = np.size(active_pixel)
             active_pixel_num_list.append(active_num)
             #计算当前帧高温区域的形态特征R
-            curr_max_R = calR(curr_frame[9])
-            max_R_list.append(curr_max_R)
-            print("the %dth frame"%(k + 1)) 
+            calR(curr_frame[9])
+            
+            #print("the %dth frame"%(k + 1)) 
             """
             print(curr_all_var)
             print(active_pixel)
@@ -87,6 +113,7 @@ def calFeature(dataDir):
                 #计算出最大活跃像素数量
                 max_therhold_pixel_num = np.max(active_pixel_num_list)
                 #计算出高温区域的形态特征R的最大值
+                print(max_R_list)
                 max_R = np.max(max_R_list)
                 print(max_moving_frame,max_variance,max_therhold_pixel_num,max_R)
             else:
