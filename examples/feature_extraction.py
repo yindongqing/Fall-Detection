@@ -61,7 +61,7 @@ def calR(curr_temp_frame):
     pos = props[max_area_pos].bbox
     row_len = pos[2] - pos[0]
     col_len = pos[3] - pos[1]
-    curr_R = props[max_area_pos].area * col_len / row_len
+    curr_R = props[max_area_pos].area * max(row_len, col_len) / min(row_len, col_len)
     max_R_list.append(curr_R)
 
 def calFeature(dataDir):
@@ -96,8 +96,10 @@ def calFeature(dataDir):
             #计算当前帧高温区域的形态特征R
             calR(curr_frame[9])
             
-            #print("the %dth frame"%(k + 1)) 
+            print("the %dth frame"%(k + 1))
             """
+            print(curr_max_var)
+            
             print(curr_all_var)
             print(active_pixel)
             print(curr_max_var,active_num)
@@ -113,12 +115,15 @@ def calFeature(dataDir):
                 #计算出最大活跃像素数量
                 max_therhold_pixel_num = np.max(active_pixel_num_list)
                 #计算出高温区域的形态特征R的最大值
-                print(max_R_list)
+                
+                #print(max_R_list)
+                print(max_var_list)
+                #print(active_pixel_num_list)
+
                 max_R = np.max(max_R_list)
-                print(max_moving_frame,max_variance,max_therhold_pixel_num,max_R)
             else:
                 continue
-
+    print(max_moving_frame,max_variance,max_therhold_pixel_num,max_R)
 
 #使矩阵完整显示
 np.set_printoptions(threshold = np.inf)
