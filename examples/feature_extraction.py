@@ -2,17 +2,13 @@ import numpy as np
 import os
 import sys
 import time
+import csv
 from skimage.measure import label,regionprops
 row_num = 8
 col_num = 8
 pixel_num = 64
 k_start = 0 
 k_end = 0
-#四个特征
-max_moving_frame = 0
-max_variance = 0.0
-max_therhold_pixel_num = 0
-max_R = 0.0
 #阈值
 therhold = 0.8
 
@@ -21,6 +17,7 @@ active_pixel_num_list = []#存放一帧中高温点的个数的矩阵
 max_R_list = []#存放高温区域的形态特征R的矩阵
 
 def calR(curr_temp_frame):
+    global max_R_list
     temp = curr_temp_frame.flatten()
     #舍弃1/3的温度，取温度相对较高的部分计算温度均值
     sorted_temp = np.sort(temp)[::-1]
@@ -64,7 +61,8 @@ def calR(curr_temp_frame):
     curr_R = props[max_area_pos].area * max(row_len, col_len) / min(row_len, col_len)
     max_R_list.append(curr_R)
 
-def calFeature(dataDir):
+def calFeature(dataDir, max_moving_frame = 0, max_variance = 0, max_therhold_pixel_num = 0, max_R = 0):
+    global max_R_list, max_var_list, active_pixel_num_list, max_R_list
     is_human = False
     all_frame = np.load(dataDir)
     if np.size(all_frame) < 10 * pixel_num:
@@ -86,7 +84,7 @@ def calFeature(dataDir):
         if curr_max_var > therhold:
             if not is_human:
                 is_human = True
-                k_start = k
+                curr_k_start = k
             #存放当前最大方差
             max_var_list.append(curr_max_var)
             #存放活跃像素数量
@@ -96,7 +94,7 @@ def calFeature(dataDir):
             #计算当前帧高温区域的形态特征R
             calR(curr_frame[9])
             
-            print("the %dth frame"%(k + 1))
+            #print("the %dth frame"%(k + 1))
             """
             print(curr_max_var)
             
@@ -107,36 +105,57 @@ def calFeature(dataDir):
         else:
             if is_human:
                 is_human = False
-                k_end = k
-                #计算出最大运动帧数
-                max_moving_frame = k_end - k_start + 1
-                #计算出最大方差
-                max_variance = np.max(max_var_list)
-                #计算出最大活跃像素数量
-                max_therhold_pixel_num = np.max(active_pixel_num_list)
-                #计算出高温区域的形态特征R的最大值
-                
+                curr_k_end = k
+                if max_moving_frame < curr_k_end - curr_k_start + 1:
+                    k_start = curr_k_start
+                    k_end = curr_k_end
+                    #计算出最大运动帧数
+                    max_moving_frame = curr_k_end - curr_k_start + 1
+                    #计算出最大方差
+                    frame_size = np.size(max_variance) - (k_end  - k_start + 1)
+                    max_variance = np.max(max_var_list[frame_size:])
+                    #计算出最大活跃像素数量
+                    max_therhold_pixel_num = np.max(active_pixel_num_list[frame_size:])
+                    #计算出高温区域的形态特征R的最大值
+                    max_R = np.max(max_R_list[frame_size:])
                 #print(max_R_list)
-                print(max_var_list)
+                #print(max_var_list)
                 #print(active_pixel_num_list)
 
-                max_R = np.max(max_R_list)
             else:
                 continue
-    print(max_moving_frame,max_variance,max_therhold_pixel_num,max_R)
+    return max_moving_frame, max_variance, max_therhold_pixel_num, max_R
 
-#使矩阵完整显示
-np.set_printoptions(threshold = np.inf)
-if len(sys.argv) > 1:
-    try:
-        Dir = sys.argv[1]
-    except:
-        raise ValueError("please input the correct dir of npy data")
-else:
-    raise ValueError("please input the dir of npy data")
-#读取路径
-currDir = os.path.abspath(os.path.dirname(__file__))
-if currDir.endswith("examples"):
-    Dir = currDir + "/" + Dir
-print(Dir)
-calFeature(Dir)
+                                
+def write_csv(max_moving_frame, max_variance, max_therhold_pixel_num, max_R, is_fall):
+    path  = "data.csv"
+    with open(path,'a+') as f:
+        csv_write = csv.writer(f)
+        data_row = [max_moving_frame, max_variance, max_therhold_pixel_num, max_R, is_fall]
+        csv_write.writerow(data_row)
+
+if __name__ == "__main__":
+    #四个特征
+    max_moving_frame = 0
+    max_variance = 0.0
+    max_therhold_pixel_num = 0
+    max_R = 0.0 
+    #使矩阵完整显示
+    np.set_printoptions(threshold = np.inf)
+    if len(sys.argv) > 1:
+        try:
+            Dir = sys.argv[1]
+        except:
+            raise ValueError("please input the correct dir of npy data")
+    else:
+        raise ValueError("please input the dir of npy data")
+    #读取路径
+    currDir = os.path.abspath(os.path.dirname(__file__))
+    if currDir.endswith("examples"):
+        Dir = currDir + "/" + Dir
+    print(Dir)
+    max_moving_frame, max_variance, max_therhold_pixel_num, max_R = calFeature(Dir, max_moving_frame, max_variance, max_therhold_pixel_num, max_R)
+    print(max_moving_frame, max_variance, max_therhold_pixel_num, max_R)
+    if len(sys.argv > 2):
+        is_fall = sys.argv[2]
+        write_csv(max_moving_frame, max_variance, max_therhold_pixel_num, max_R, is_fall)
